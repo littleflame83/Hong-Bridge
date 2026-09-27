@@ -2257,6 +2257,15 @@ var lecCourses = [];
 
   window.addEventListener('popstate', renderRoute);
 
+  // 다른 앱(스레드 등)에 갔다가 돌아왔을 때 브라우저가 페이지를 그대로
+  // "얼려서" 복원하는 경우가 있는데, 이때 화면이 하얗게 멈춰있지 않도록
+  // 강제로 다시 그려줍니다.
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+      renderRoute();
+    }
+  });
+
   renderRoute();
 
   (function () {
