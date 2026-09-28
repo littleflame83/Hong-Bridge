@@ -293,6 +293,15 @@
 .share-choice-hint{display:block;margin-top:4px;font-size:11px;color:var(--ink-faint);}
 .share-copy-only{display:block;width:100%;margin-top:16px;padding:10px;border:0;background:none;font-size:13px;font-weight:700;color:var(--ink-faint);cursor:pointer;text-align:center;}
 .share-copy-only:hover{color:var(--ink);}
+/* 다른 앱에 다녀올 때 아이폰에서 화면이 하얗게 멈추는 문제를 막기 위해,
+   그 순간에만 흐림 효과(backdrop-filter)를 잠깐 끕니다. */
+html.paint-reset .article-modal,
+html.paint-reset .lecture-video-modal,
+html.paint-reset .search-overlay,
+html.paint-reset .share-sheet-backdrop{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
 .article-modal-scroll{overflow-y:auto;}
 .article-wrap{max-width:100%;margin:0 auto;padding:56px 28px 40px;}
 @media (max-width:640px){
@@ -1809,12 +1818,13 @@ var lecCourses = [];
   });
   document.getElementById('shareFacebook').addEventListener('click', function () {
     copyShareUrl().then(function () {
+      prepareForExternalApp();
       window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(activeShareUrl), '_blank', 'noopener,noreferrer');
     });
   });
   document.getElementById('shareThreads').addEventListener('click', function () {
     var intent = 'https://www.threads.com/intent/post?text=' + encodeURIComponent(activeShareTitle) + '&url=' + encodeURIComponent(activeShareUrl);
-    closeShareSheet();
+    prepareForExternalApp();
     window.open(intent, '_blank', 'noopener,noreferrer');
   });
   document.getElementById('shareInstagram').addEventListener('click', function () {
@@ -1824,6 +1834,7 @@ var lecCourses = [];
   });
   document.getElementById('shareKakao').addEventListener('click', function () {
     if (window.Kakao && Kakao.Share && Kakao.isInitialized && Kakao.isInitialized()) {
+      prepareForExternalApp();
       Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
@@ -1836,6 +1847,7 @@ var lecCourses = [];
       return;
     }
     if (navigator.share) {
+      prepareForExternalApp();
       navigator.share({ title: activeShareTitle, text: activeShareTitle, url: activeShareUrl }).catch(function () {});
       return;
     }
@@ -2279,16 +2291,43 @@ var lecCourses = [];
   // 다른 앱(스레드 등)에 갔다가 돌아왔을 때 브라우저가 페이지를 그대로
   // "얼려서" 복원하는 경우가 있는데, 이때 화면이 하얗게 멈춰있지 않도록
   // 강제로 다시 그려줍니다.
-  window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-      renderRoute();
-    }
+  // ===== 다른 앱(스레드 등)에 갔다가 돌아왔을 때 흰 화면 방지 =====
+  // 아이폰(사파리)은 흐림 효과(backdrop-filter)가 켜진 팝업이 떠 있는 채로
+  // 다른 앱에 갔다가 돌아오면, 화면을 다시 그리지 못하고 하얗게 멈추는 문제가 있습니다.
+  // 그래서 ① 떠나기 직전에 흐림 효과만 잠깐 끄고, ② 돌아오면 다시 켜면서
+  // 화면을 새로 그리게 합니다. 열려 있던 창/글/영상 상태는 그대로 유지됩니다.
+  function prepareForExternalApp() {
+    document.documentElement.classList.add('paint-reset');
+    setTimeout(function () {
+      if (document.visibilityState === 'visible') resumePaint();
+    }, 2500);
+  }
+
+  function resumePaint() {
+    var root = document.documentElement;
+    if (!root.classList.contains('paint-reset')) return;
+    void document.body.offsetHeight;
+    requestAnimationFrame(function () {
+      root.classList.remove('paint-reset');
+      void document.body.offsetHeight;
+    });
+  }
+
+  window.addEventListener('pagehide', function () {
+    document.documentElement.classList.add('paint-reset');
   });
 
-  // 다른 앱에 갔다가 화면으로 돌아올 때마다 확인해서, 만약 화면이
-  // 하얗게 멈춰있는 상태(모든 화면이 숨겨진 상태)라면 강제로 다시 그립니다.
+  window.addEventListener('pageshow', function () {
+    resumePaint();
+  });
+
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState !== 'visible') return;
+    if (document.visibilityState === 'hidden') {
+      document.documentElement.classList.add('paint-reset');
+      return;
+    }
+    resumePaint();
+    // 그래도 모든 화면이 숨겨진 진짜 빈 상태라면 그때만 화면을 다시 구성합니다.
     var anyVisible = ['view-home', 'view-lectures', 'view-sermons', 'view-writing', 'view-intro', 'view-apply'].some(function (v) {
       var el = document.getElementById(v);
       return el && el.style.display !== 'none';
