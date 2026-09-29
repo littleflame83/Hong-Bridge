@@ -341,18 +341,18 @@ html.paint-reset .share-sheet-backdrop{
   .attachments-label{font-size:12px;font-weight:700;color:var(--ink-faint);margin-bottom:8px;}
   .attachment-row{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--brown-dark);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:4px 0;}
   .attachment-row:hover{color:var(--brown);}
-  .article-prevnext{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:36px 0 0;padding-top:28px;border-top:1px solid var(--line);}
-  .prevnext-card{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--cream);transition:box-shadow .15s ease,border-color .15s ease;}
-  .prevnext-card:hover{border-color:var(--brown);box-shadow:0 8px 20px rgba(43,32,19,.1);}
+  .quiet-link{font-size:13.5px;font-weight:700;color:var(--brown-dark);text-decoration:underline;text-underline-offset:3px;}
+  .quiet-link:hover{color:var(--brown);}
+  .article-prevnext{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:36px 0 0;padding-top:24px;border-top:1px solid var(--line);}
+  .prevnext-quiet{display:flex;flex-direction:column;gap:3px;}
   #a-next{text-align:right;align-items:flex-end;}
-  .prevnext-label{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brown);}
-  .prevnext-title{font-size:14px;font-weight:700;color:var(--ink);line-height:1.4;}
+  .prevnext-label{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--ink-faint);}
+  .prevnext-title{font-size:13.5px;font-weight:700;color:var(--brown-dark);text-decoration:underline;text-underline-offset:3px;line-height:1.4;}
+  .prevnext-quiet:hover .prevnext-title{color:var(--brown);}
   @media (max-width:560px){
     .article-prevnext{grid-template-columns:1fr;}
     #a-next{text-align:left;align-items:flex-start;}
   }
-  .section-more-inline{display:inline-flex;align-items:center;gap:6px;padding:11px 26px;border:1.5px solid var(--brown);border-radius:999px;font-size:13.5px;font-weight:700;color:var(--brown);transition:background-color .15s ease,color .15s ease;}
-  .section-more-inline:hover{background:var(--brown);color:#fff;}
   .article-cta-group{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:40px 0;}
   .cta-block{padding:18px 20px;border-radius:10px;background:var(--cream-deep);display:flex;flex-direction:column;}
   .cta-block .cta-title{margin:0 0 6px;font-weight:700;color:var(--ink);font-size:14.5px;line-height:1.4;}
@@ -584,18 +584,21 @@ html.paint-reset .share-sheet-backdrop{
           <div class="attachments" id="a-attachments" style="display:none;">
             <div class="attachments-label">첨부파일</div>
           </div>
+          <div id="a-related-video" style="display:none;margin-bottom:28px;">
+            <a class="quiet-link" id="a-related-video-link"></a>
+          </div>
           <div class="article-prevnext" id="a-prevnext" style="display:none;">
-            <a class="prevnext-card" id="a-prev" style="display:none;">
+            <a class="prevnext-quiet" id="a-prev" style="display:none;">
               <span class="prevnext-label">← 이전 글</span>
               <span class="prevnext-title" id="a-prev-title"></span>
             </a>
-            <a class="prevnext-card" id="a-next" style="display:none;">
+            <a class="prevnext-quiet" id="a-next" style="display:none;">
               <span class="prevnext-label">다음 글 →</span>
               <span class="prevnext-title" id="a-next-title"></span>
             </a>
           </div>
           <div style="text-align:center;margin:28px 0;">
-            <a class="section-more-inline" href="/writing/">글 전체보기</a>
+            <a class="quiet-link" href="/writing/">글 전체보기</a>
           </div>
           <div class="article-cta-group">
             <div class="cta-block cta-chat">
@@ -1153,6 +1156,7 @@ function toYoutubeEmbed(url) {
 
   function renderBody(container, text) {
     container.innerHTML = '';
+    delete container.dataset.relatedSermonId;
     (text || '').split(/\n\s*\n/).forEach(function (para) {
       para = para.trim();
       if (!para || para === '---') return;
@@ -1193,16 +1197,7 @@ function toYoutubeEmbed(url) {
       }
 
       if (para.indexOf('sermon::') === 0) {
-        var sermonId = para.slice(8).trim();
-        var wrap = document.createElement('div');
-        wrap.className = 'always-visible';
-        wrap.style.cssText = 'text-align:center;margin:8px 0 28px;';
-        var a = document.createElement('a');
-        a.className = 'cta-btn cta-btn-solid';
-        a.href = buildPath({ page: 'sermons', video: sermonId });
-        a.textContent = '이 글과 관련된 영상 보기 →';
-        wrap.appendChild(a);
-        container.appendChild(wrap);
+        container.dataset.relatedSermonId = para.slice(8).trim();
         return;
       }
 
@@ -1431,6 +1426,7 @@ function toYoutubeEmbed(url) {
       document.getElementById('a-prevnext').style.display = 'none';
       document.getElementById('a-prev').style.display = 'none';
       document.getElementById('a-next').style.display = 'none';
+      document.getElementById('a-related-video').style.display = 'none';
       document.getElementById('a-cat').textContent = [entry.mainCategory, entry.subCategory].filter(Boolean).join(' · ');
       document.getElementById('a-title').textContent = entry.title;
       document.getElementById('a-date').textContent = entry.date || '';
@@ -1438,6 +1434,14 @@ function toYoutubeEmbed(url) {
       renderBody(document.getElementById('a-body'), entry.body);
       makeSubheadingsCollapsible(document.getElementById('a-body'));
       renderAttachments(document.getElementById('a-attachments'), entry.attachments);
+
+      var relatedSermonId = document.getElementById('a-body').dataset.relatedSermonId;
+      if (relatedSermonId) {
+        var relVideoLink = document.getElementById('a-related-video-link');
+        relVideoLink.href = buildPath({ page: 'sermons', video: relatedSermonId });
+        relVideoLink.textContent = '이 글과 관련된 영상 보기 →';
+        document.getElementById('a-related-video').style.display = 'block';
+      }
   
       if (entry.video) {
         document.getElementById('a-video').style.display = 'block';
