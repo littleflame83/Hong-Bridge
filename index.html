@@ -337,10 +337,10 @@ html.paint-reset .share-sheet-backdrop{
   .scripture-quote{margin:0 0 14px;padding:10px 16px;background:var(--cream-deep);border-left:4px solid var(--brown);border-radius:0 6px 6px 0;font-style:italic;font-size:14px;line-height:1.4;color:var(--ink-soft);}
   .scripture-quote cite{display:block;margin-top:4px;font-style:normal;font-size:12px;font-weight:700;color:var(--ink-faint);}
   .article-note{margin:0 0 18px;font-weight:700;color:var(--brown);}
-  .attachments{margin-bottom:32px;padding:18px 20px;background:var(--card);border:1px solid var(--line);border-radius:6px;}
-  .attachments-label{font-size:12px;font-weight:700;color:var(--ink-faint);margin-bottom:10px;}
-  .attachment-row{display:inline-flex;align-items:center;gap:9px;font-size:14.5px;color:var(--cream);font-weight:700;padding:12px 22px;background:var(--brown);border-radius:999px;}
-  .attachment-row:hover{opacity:.9;}
+  .attachments{margin-bottom:28px;}
+  .attachments-label{font-size:12px;font-weight:700;color:var(--ink-faint);margin-bottom:8px;}
+  .attachment-row{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--brown-dark);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:4px 0;}
+  .attachment-row:hover{color:var(--brown);}
   .article-prevnext{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:36px 0 0;padding-top:28px;border-top:1px solid var(--line);}
   .prevnext-card{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--cream);transition:box-shadow .15s ease,border-color .15s ease;}
   .prevnext-card:hover{border-color:var(--brown);box-shadow:0 8px 20px rgba(43,32,19,.1);}
@@ -1302,7 +1302,7 @@ function toYoutubeEmbed(url) {
       row.href = resolveAsset(a.path);
       row.setAttribute('download', '');
       row.innerHTML =
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>' +
+        '<span aria-hidden="true">📎</span>' +
         '<span>' + a.name + '</span>';
       container.appendChild(row);
     });
