@@ -37,5 +37,22 @@
     "scripture": "출애굽기 13-14장; 40장",
     "relatedWritingId": "cloud-or-fire-pillar",
     "series": ""
+  },
+  {
+    "id": "biblical-studies-intro-books-video",
+    "title": "성서학 입문책을 소개합니다",
+    "mainCategory": "구약학·신약학",
+    "subCategory": "성서학 방법론",
+    "tags": [
+      "입문",
+      "개론"
+    ],
+    "summary": "성서학에 단계가 있습니다. 처음 단계인 입문서를 소개합니다",
+    "date": "2026-09-29",
+    "thumbnail": "",
+    "video": "https://youtu.be/98zhS-s_RMg?si=uhH4By5i5Yw-v0TX",
+    "body": "",
+    "relatedWritingId": "biblical-studies-intro-books",
+    "series": ""
   }
 ]
