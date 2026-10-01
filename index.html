@@ -143,6 +143,30 @@
   .section-more a{padding:12px 30px;border:1.5px solid var(--brown);border-radius:999px;font-size:14px;font-weight:700;color:var(--brown);}
   .section-more a:hover{background:var(--brown);color:var(--cream);}
 
+  /* ===== 메인 글/영상: 캄미션 메인과 같은 폭·여백·2열 카드 ===== */
+  .home-content-wrap{max-width:72rem;margin:0 auto;}
+  .home-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;}
+  .home-card{
+    background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;
+    display:flex;flex-direction:column;text-align:left;color:inherit;
+    box-shadow:0 8px 30px -8px rgba(42,37,33,.10);
+    transition:box-shadow .3s ease,transform .3s ease;
+  }
+  .home-card:hover{box-shadow:0 10px 40px -12px rgba(42,37,33,.16);transform:translateY(-2px);}
+  .home-thumb{width:100%;aspect-ratio:4/3;background:var(--cream-deep);overflow:hidden;position:relative;}
+  .home-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease;}
+  .home-card:hover .home-thumb img{transform:scale(1.035);}
+  .home-body{padding:24px;display:flex;flex-direction:column;}
+  .home-card .home-cat{font-size:11px;font-weight:700;color:var(--brown);letter-spacing:.04em;}
+  .home-card .home-title{margin:8px 0 0;font-size:18px;font-weight:700;line-height:1.45;color:var(--ink);}
+  .home-card .home-summary{margin:8px 0 0;font-size:14px;color:var(--ink-soft);line-height:1.65;}
+  .home-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:999px;background:rgba(42,37,33,.72);display:flex;align-items:center;justify-content:center;color:#fff;}
+  .home-play svg{width:22px;height:22px;fill:currentColor;margin-left:3px;}
+  @media (max-width:640px){
+    .home-card-grid{grid-template-columns:1fr;gap:22px;}
+    .home-body{padding:20px;}
+  }
+
   .lecture-list{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
   .lecture-row{display:flex;align-items:center;gap:20px;padding:22px 24px;border-bottom:1px solid var(--line);}
   .lecture-row:last-child{border-bottom:none;}
@@ -495,11 +519,13 @@ html.paint-reset .share-sheet-backdrop{
 
 <!-- ===== 글 ===== -->
 <section id="writing">
-  <div class="section-head">
-    <h2>글</h2>
+  <div class="home-content-wrap">
+    <div class="section-head">
+      <h2>글</h2>
+    </div>
+    <div class="home-card-grid" id="writing-cards"></div>
+    <div class="section-more"><a href="/writing/">글 전체보기</a></div>
   </div>
-  <div class="grid2 home-writing-grid" id="writing-cards"></div>
-  <div class="section-more"><a href="/writing/">글 전체보기</a></div>
 </section>
 
 <!-- ===== 성경 강의 ===== -->
@@ -526,11 +552,13 @@ html.paint-reset .share-sheet-backdrop{
 
 <!-- ===== 영상 ===== -->
 <section id="sermons">
-  <div class="section-head">
-    <h2>영상</h2>
+  <div class="home-content-wrap">
+    <div class="section-head">
+      <h2>영상</h2>
+    </div>
+    <div class="home-card-grid" id="sermon-cards"></div>
+    <div class="section-more"><a href="/sermons/">영상 전체보기</a></div>
   </div>
-  <div class="grid2" id="sermon-cards"></div>
-  <div class="section-more"><a href="/sermons/">영상 전체보기</a></div>
 </section>
 
 
@@ -1310,19 +1338,15 @@ function toYoutubeEmbed(url) {
       wrap.innerHTML = '';
       top4.forEach(function (item) {
         var a = document.createElement('a');
-        a.className = 'card';
+        a.className = 'home-card';
         a.href = buildPath({ page: 'article', id: item.id });
         var cat = [item.mainCategory, item.subCategory].filter(Boolean).join(' · ');
-        var tagsHtml = (item.tags || []).map(function (t) {
-          return '<span class="tag">' + escapeHtml(t) + '</span>';
-        }).join('');
         a.innerHTML =
-          '<div class="thumb">' + (item.thumbnail ? '<img src="' + resolveAsset(item.thumbnail) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;">' : '[대표 이미지]') + '</div>' +
-          '<div class="body">' +
-          '<span class="cat">' + escapeHtml(cat) + '</span>' +
-          '<h3>' + escapeHtml(item.title) + '</h3>' +
-          '<p>' + escapeHtml(item.summary || '') + '</p>' +
-          '<div class="tags">' + tagsHtml + '</div>' +
+          '<div class="home-thumb">' + (item.thumbnail ? '<img src="' + resolveAsset(item.thumbnail) + '" loading="lazy" alt="' + escapeHtml(item.title) + '">' : '') + '</div>' +
+          '<div class="home-body">' +
+          '<span class="home-cat">' + escapeHtml(cat) + '</span>' +
+          '<h3 class="home-title">' + escapeHtml(item.title) + '</h3>' +
+          '<p class="home-summary">' + escapeHtml(item.summary || '') + '</p>' +
           '</div>';
         wrap.appendChild(a);
       });
@@ -1346,16 +1370,16 @@ function toYoutubeEmbed(url) {
   
           var card = document.createElement('button');
           card.type = 'button';
-          card.className = 'week-card';
+          card.className = 'home-card';
           card.innerHTML =
-            '<div class="week-thumb">' +
+            '<div class="home-thumb">' +
               (thumb ? '<img src="' + thumb + '" alt="' + escapeHtml(s.title) + '" loading="lazy">' : '') +
-              (videoId ? '<span class="week-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"></path></svg></span>' : '') +
+              (videoId ? '<span class="home-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"></path></svg></span>' : '') +
             '</div>' +
-            '<div class="week-body">' +
-            '<span class="week-num">' + escapeHtml(badge) + '</span>' +
-            '<span class="week-title">' + escapeHtml(s.title) + '</span>' +
-            (s.summary ? '<span class="week-summary">' + escapeHtml(s.summary) + '</span>' : '') +
+            '<div class="home-body">' +
+            '<span class="home-cat">' + escapeHtml(badge) + '</span>' +
+            '<span class="home-title">' + escapeHtml(s.title) + '</span>' +
+            (s.summary ? '<span class="home-summary">' + escapeHtml(s.summary) + '</span>' : '') +
             '</div>';
           card.addEventListener('click', function () {
             openLectureVideo(s.video, s.title, relatedId, buildPath({ page: 'sermons', video: s.id }));
