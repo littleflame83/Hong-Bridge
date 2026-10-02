@@ -357,6 +357,7 @@ html.paint-reset .share-sheet-backdrop{
   .scripture-quote{margin:0 0 14px;padding:10px 16px;background:var(--cream-deep);border-left:4px solid var(--brown);border-radius:0 6px 6px 0;font-style:italic;font-size:14px;line-height:1.4;color:var(--ink-soft);}
   .scripture-quote cite{display:block;margin-top:4px;font-style:normal;font-size:12px;font-weight:700;color:var(--ink-faint);}
   .article-note{margin:0 0 18px;font-weight:700;color:var(--brown);}
+  .article-indent{margin:0 0 18px;padding-left:22px;border-left:2px solid var(--line);}
   .attachments{margin-bottom:28px;}
   .attachments-label{font-size:12px;font-weight:700;color:var(--ink-faint);margin-bottom:8px;}
   .attachment-row{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--brown-dark);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:4px 0;}
@@ -611,6 +612,10 @@ html.paint-reset .share-sheet-backdrop{
           <div id="a-related-video" style="display:none;text-align:center;margin:8px 0 28px;">
             <a class="cta-btn cta-btn-solid" id="a-related-video-link"></a>
           </div>
+          <section class="related-wrap" id="a-related-wrap" style="display:none;">
+            <h2>관련 글</h2>
+            <div class="tag-list" id="a-related"></div>
+          </section>
           <div class="article-prevnext" id="a-prevnext" style="display:none;">
             <a class="prevnext-card" id="a-prev" style="display:none;">
               <span class="prevnext-label">← 이전 글</span>
@@ -642,11 +647,6 @@ html.paint-reset .share-sheet-backdrop{
           <a href="/" style="color:var(--brown);font-weight:700;">홈으로 돌아가기</a>
         </div>
       </main>
-
-      <section class="related-wrap" id="a-related-wrap" style="display:none;">
-        <h2>같은 태그의 글</h2>
-        <div class="tag-list" id="a-related"></div>
-      </section>
     </div>
   </div>
 </div>
@@ -1225,6 +1225,15 @@ function toYoutubeEmbed(url) {
         return;
       }
 
+      if (para.indexOf('>>') === 0) {
+        var indentLines = para.split('\n').map(function (l) { return l.trim().replace(/^>>\s?/, ''); });
+        var indentP = document.createElement('p');
+        indentP.className = 'article-indent';
+        indentP.innerHTML = indentLines.map(inlineFormat).join('<br>');
+        container.appendChild(indentP);
+        return;
+      }
+
       var lines = para.split('\n').map(function (l) { return l.trim(); });
       if (lines.length && lines.every(function (l) { return l.indexOf('>') === 0; })) {
         var stripped = lines.map(function (l) { return l.replace(/^>\s?/, ''); });
@@ -1468,11 +1477,20 @@ function toYoutubeEmbed(url) {
         document.getElementById('a-video-frame').src = toYoutubeEmbed(entry.video);
       }
   
-      if (entry.tags && entry.tags.length) {
-        var related = all.filter(function (e) {
-          return e.id !== entry.id && e.sourceType !== 'sermon' && e.tags && e.tags.some(function (t) { return entry.tags.indexOf(t) !== -1; });
-        }).slice(0, 5);
-  
+      {
+        var relatedPool = all.filter(function (e) { return e.id !== entry.id && e.sourceType !== 'sermon'; });
+        var byTag = entry.tags && entry.tags.length
+          ? relatedPool.filter(function (e) { return e.tags && e.tags.some(function (t) { return entry.tags.indexOf(t) !== -1; }); })
+          : [];
+        var related = byTag.slice(0, 3);
+        if (related.length < 3 && entry.mainCategory) {
+          var usedIds = related.map(function (r) { return r.id; });
+          var byCategory = relatedPool.filter(function (e) {
+            return usedIds.indexOf(e.id) === -1 && e.mainCategory === entry.mainCategory;
+          });
+          related = related.concat(byCategory.slice(0, 3 - related.length));
+        }
+
         if (related.length) {
           var relWrap = document.getElementById('a-related-wrap');
           var relList = document.getElementById('a-related');
