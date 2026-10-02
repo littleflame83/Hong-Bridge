@@ -168,7 +168,12 @@
   }
 
   .lecture-list{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
-  .related-tag-label{font-size:12px;font-weight:700;color:var(--brown);margin:0 0 4px;padding:0 24px;}
+  .related-tag-label{display:inline-block;font-size:16px;font-weight:800;color:var(--brown);margin:0 0 10px;padding:0;}
+  .related-tag-label:hover{text-decoration:underline;}
+  .tag-pill-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+  .tag-pill{display:inline-flex;padding:9px 20px;border-radius:999px;border:1.5px solid var(--brown);color:var(--brown);font-size:13.5px;font-weight:700;background:var(--cream);transition:background-color .15s ease,color .15s ease;}
+  .tag-pill:hover{background:var(--brown);color:#fff;}
+  .tag-pill.active{background:var(--brown);color:#fff;}
   .lecture-row{display:flex;align-items:center;gap:20px;padding:22px 24px;border-bottom:1px solid var(--line);}
   .lecture-row:last-child{border-bottom:none;}
   .lecture-title{font-size:16.5px;font-weight:700;white-space:nowrap;}
@@ -598,6 +603,10 @@ html.paint-reset .share-sheet-backdrop{
       </div>
       <div class="search-grid" id="searchResults"></div>
       <p class="search-none hidden" id="searchNoResult">검색 결과가 없습니다.</p>
+      <div id="searchTagSection" style="display:none;margin-top:32px;">
+        <a class="related-tag-label" id="searchTagLabel"></a>
+        <div class="home-card-grid" id="searchTagGrid"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -854,6 +863,17 @@ html.paint-reset .share-sheet-backdrop{
       <button type="submit" class="apply-submit" id="apply-submit-btn">완료</button>
       <div class="apply-status" id="apply-status"></div>
     </form>
+  </div>
+</main>
+</div>
+
+<div id="view-tags" style="display:none;">
+<main>
+  <div class="lec-wrap">
+    <h1 id="tags-heading">태그</h1>
+    <p class="lec-intro" id="tags-intro">관심 있는 태그를 눌러 관련된 글·영상·강의를 모아 보세요.</p>
+    <div class="tag-pill-list" id="tags-pill-list"></div>
+    <div class="home-card-grid" id="tags-content-grid" style="margin-top:28px;"></div>
   </div>
 </main>
 </div>
@@ -1414,8 +1434,8 @@ function toYoutubeEmbed(url) {
   initRelatedTags();
   }
 
-  function initRelatedTags() {
-    Promise.all([
+  function buildTagIndex() {
+    return Promise.all([
       fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
       fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
       fetch(BASE_PATH + 'data/lectures.json').then(function (r) { return r.json(); }).catch(function () { return []; })
@@ -1423,17 +1443,32 @@ function toYoutubeEmbed(url) {
       var writing = results[0], sermons = results[1], lecturesRaw = results[2];
       var all = [];
       writing.forEach(function (w) {
-        all.push({ type: 'writing', id: w.id, title: w.title, tags: w.tags || [], path: buildPath({ page: 'article', id: w.id }) });
+        all.push({
+          type: 'writing', id: w.id, title: w.title, tags: w.tags || [], date: w.date || '',
+          thumbnail: w.thumbnail ? resolveAsset(w.thumbnail) : '', summary: w.summary || '',
+          cat: [w.mainCategory, w.subCategory].filter(Boolean).join(' · '),
+          path: buildPath({ page: 'article', id: w.id })
+        });
       });
       sermons.forEach(function (s) {
         if (!s.video) return;
-        all.push({ type: 'sermons', id: s.id, title: s.title, tags: s.tags || [], path: buildPath({ page: 'sermons', video: s.id }) });
+        all.push({
+          type: 'sermons', id: s.id, title: s.title, tags: s.tags || [], date: s.date || '',
+          thumbnail: s.thumbnail ? resolveAsset(s.thumbnail) : youtubeThumb(s.video), summary: s.summary || '',
+          cat: [s.mainCategory, s.subCategory].filter(Boolean).join(' · '),
+          path: buildPath({ page: 'sermons', video: s.id })
+        });
       });
       (lecturesRaw || []).forEach(function (course) {
         var courseCode = course.id.indexOf('ot') === 0 ? 'ot' : 'nt';
         (course.weeks || []).forEach(function (w) {
           if (!w.video) return;
-          all.push({ type: 'lectures', id: w.id, title: w.title, tags: w.tags || [], path: buildPath({ page: 'lectures', course: courseCode, video: w.id }) });
+          all.push({
+            type: 'lectures', id: w.id, title: w.title, tags: w.tags || [], date: w.date || '',
+            thumbnail: w.thumbnail ? resolveAsset(w.thumbnail) : youtubeThumb(w.video), summary: w.summary || '',
+            cat: [w.mainCategory, w.subCategory].filter(Boolean).join(' · '),
+            path: buildPath({ page: 'lectures', course: courseCode, video: w.id })
+          });
         });
       });
 
@@ -1444,15 +1479,43 @@ function toYoutubeEmbed(url) {
           // 같은 제목(= 글과 그 글 전용 영상의 짝)은 하나로 합쳐서, 대표로 글을 남깁니다.
           var dup = byTag[t].filter(function (x) { return x.title === item.title; })[0];
           if (dup) {
-            if (item.type === 'writing') dup.type = 'writing', dup.id = item.id, dup.path = item.path;
+            if (item.type === 'writing') { dup.type = 'writing'; dup.id = item.id; dup.path = item.path; dup.thumbnail = dup.thumbnail || item.thumbnail; }
           } else {
             byTag[t].push(item);
           }
         });
       });
 
-      var groups = Object.keys(byTag)
-        .map(function (t) { return { tag: t, items: byTag[t] }; })
+      return { all: all, byTag: byTag };
+    });
+  }
+
+  function youtubeThumb(videoUrl) {
+    var m = String(videoUrl || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/);
+    return m ? 'https://img.youtube.com/vi/' + m[1] + '/hqdefault.jpg' : '';
+  }
+
+  function renderHomeCardGrid(container, items) {
+    container.innerHTML = '';
+    items.forEach(function (item) {
+      var a = document.createElement('a');
+      a.className = 'home-card';
+      a.href = item.path;
+      a.innerHTML =
+        '<div class="home-thumb">' + (item.thumbnail ? '<img src="' + item.thumbnail + '" loading="lazy" alt="' + escapeHtml(item.title) + '">' : '') + '</div>' +
+        '<div class="home-body">' +
+        '<span class="home-cat">' + escapeHtml(item.cat) + '</span>' +
+        '<h3 class="home-title">' + escapeHtml(item.title) + '</h3>' +
+        '<p class="home-summary">' + escapeHtml(item.summary || '') + '</p>' +
+        '</div>';
+      container.appendChild(a);
+    });
+  }
+
+  function initRelatedTags() {
+    buildTagIndex().then(function (idx) {
+      var groups = Object.keys(idx.byTag)
+        .map(function (t) { return { tag: t, items: idx.byTag[t] }; })
         .filter(function (g) {
           if (g.items.length < 2 || g.items.length > 4) return false;
           // 제목이 전부 같으면(= 글과 그 글 전용 영상 짝) 이미 "이 글과 관련된 영상"
@@ -1461,6 +1524,12 @@ function toYoutubeEmbed(url) {
           var allSameTitle = titles.every(function (t) { return t === titles[0]; });
           return !allSameTitle;
         });
+
+      groups.forEach(function (g) {
+        g.latestDate = g.items.reduce(function (max, it) { return (it.date || '') > max ? (it.date || '') : max; }, '');
+      });
+      groups.sort(function (a, b) { return b.latestDate.localeCompare(a.latestDate); });
+      groups = groups.slice(0, 2);
 
       var section = document.getElementById('related-tags');
       var wrap = document.getElementById('related-tag-groups');
@@ -1473,26 +1542,56 @@ function toYoutubeEmbed(url) {
 
       groups.forEach(function (g) {
         var groupEl = document.createElement('div');
-        groupEl.style.marginBottom = '18px';
-        var label = document.createElement('div');
+        groupEl.style.marginBottom = '28px';
+        var label = document.createElement('a');
         label.className = 'related-tag-label';
+        label.href = buildPath({ page: 'tag', id: g.tag });
         label.textContent = '#' + g.tag;
         groupEl.appendChild(label);
-        var list = document.createElement('div');
-        list.className = 'lecture-list';
-        g.items.forEach(function (item) {
-          var row = document.createElement('a');
-          row.className = 'lecture-row';
-          row.href = item.path;
-          row.innerHTML =
-            '<span class="lecture-title">' + escapeHtml(item.title) + '</span>' +
-            '<span class="arrow">→</span>';
-          list.appendChild(row);
-        });
-        groupEl.appendChild(list);
+        var grid = document.createElement('div');
+        grid.className = 'home-card-grid';
+        groupEl.appendChild(grid);
+        renderHomeCardGrid(grid, g.items.slice(0, 4));
         wrap.appendChild(groupEl);
       });
+      var moreEl = document.createElement('div');
+      moreEl.className = 'section-more';
+      moreEl.innerHTML = '<a href="/tags/">태그 전체보기</a>';
+      wrap.appendChild(moreEl);
       translateIfNeeded(wrap);
+    });
+  }
+
+  function initTagsPage(activeTag) {
+    buildTagIndex().then(function (idx) {
+      var tagCounts = {};
+      Object.keys(idx.byTag).forEach(function (t) { tagCounts[t] = idx.byTag[t].length; });
+      var allTags = Object.keys(tagCounts).sort(function (a, b) { return tagCounts[b] - tagCounts[a]; });
+
+      var pillList = document.getElementById('tags-pill-list');
+      pillList.innerHTML = '';
+      allTags.forEach(function (t) {
+        var pill = document.createElement('a');
+        pill.className = 'tag-pill' + (t === activeTag ? ' active' : '');
+        pill.href = buildPath({ page: 'tag', id: t });
+        pill.textContent = '#' + t;
+        pillList.appendChild(pill);
+      });
+
+      var grid = document.getElementById('tags-content-grid');
+      var heading = document.getElementById('tags-heading');
+      var intro = document.getElementById('tags-intro');
+
+      if (activeTag && idx.byTag[activeTag]) {
+        heading.textContent = '#' + activeTag;
+        intro.textContent = '"' + activeTag + '" 태그로 연결된 글·영상·강의입니다.';
+        renderHomeCardGrid(grid, idx.byTag[activeTag]);
+      } else {
+        heading.textContent = '태그';
+        intro.textContent = '관심 있는 태그를 눌러 관련된 글·영상·강의를 모아 보세요.';
+        grid.innerHTML = '';
+      }
+      translateIfNeeded(document.getElementById('view-tags'));
     });
   }
 
@@ -1837,7 +1936,8 @@ var lecCourses = [];
     'view-sermons': '영상 | HONG-BRIDGE',
     'view-writing': '글 | HONG-BRIDGE',
     'view-intro': '소개 | HONG-BRIDGE',
-    'view-apply': '강의·설교 신청 | HONG-BRIDGE'
+    'view-apply': '강의·설교 신청 | HONG-BRIDGE',
+    'view-tags': '태그 | HONG-BRIDGE'
   };
 
   function trackPageview(pagePath, title) {
@@ -1851,7 +1951,7 @@ var lecCourses = [];
   }
 
   function showView(viewId) {
-    ['view-home', 'view-lectures', 'view-intro', 'view-apply', 'view-sermons', 'view-writing'].forEach(function (v) {
+    ['view-home', 'view-lectures', 'view-intro', 'view-apply', 'view-sermons', 'view-writing', 'view-tags'].forEach(function (v) {
       document.getElementById(v).style.display = (v === viewId) ? '' : 'none';
     });
     if (PAGE_TITLES[viewId]) document.title = PAGE_TITLES[viewId];
@@ -2278,6 +2378,42 @@ var lecCourses = [];
         });
         grid.appendChild(btn);
       });
+
+      var qNorm = normalizeSearchText(q);
+      var matchedTag = null;
+      items.forEach(function (it) {
+        (it.tags || []).forEach(function (t) {
+          if (!matchedTag && normalizeSearchText(t) === qNorm) matchedTag = t;
+        });
+      });
+
+      var tagSection = document.getElementById('searchTagSection');
+      if (matchedTag) {
+        var tagItemsRaw = items.filter(function (it) { return it.tags && it.tags.indexOf(matchedTag) !== -1; });
+        var tagItems = [];
+        tagItemsRaw.forEach(function (it) {
+          var dup = tagItems.filter(function (x) { return x.title === it.title; })[0];
+          if (dup) { if (it.type === 'writing') { dup.type = it.type; dup.id = it.id; dup.video = it.video; } }
+          else tagItems.push(it);
+        });
+        var cardItems = tagItems.map(function (it) {
+          var vId = getYoutubeId(it.video);
+          var path = it.video
+            ? (it.type === 'lecture' ? buildPath({ page: 'lectures', course: it.course, video: it.id }) : buildPath({ page: 'sermons', video: it.id }))
+            : buildPath({ page: 'article', id: it.id });
+          return {
+            path: path, title: it.title, summary: it.summary || '', cat: it.category || '',
+            thumbnail: it.thumbnail ? resolveAsset(it.thumbnail) : (vId ? 'https://img.youtube.com/vi/' + vId + '/hqdefault.jpg' : '')
+          };
+        });
+        document.getElementById('searchTagLabel').textContent = '#' + matchedTag + ' 태그로 연결된 글';
+        document.getElementById('searchTagLabel').href = buildPath({ page: 'tag', id: matchedTag });
+        renderHomeCardGrid(document.getElementById('searchTagGrid'), cardItems);
+        tagSection.style.display = 'block';
+      } else {
+        tagSection.style.display = 'none';
+      }
+
       translateIfNeeded(grid);
     });
   }
@@ -2330,6 +2466,10 @@ var lecCourses = [];
     }
     if (parts[0] === 'intro') return { page: 'intro' };
     if (parts[0] === 'apply') return { page: 'apply' };
+    if (parts[0] === 'tags') {
+      if (parts[1]) return { page: 'tag', id: decodeURIComponent(parts[1]) };
+      return { page: 'tags' };
+    }
     return { page: 'home' };
   }
 
@@ -2337,6 +2477,8 @@ var lecCourses = [];
     var p;
     if (r.page === 'article') p = 'writing/' + encodeURIComponent(r.id) + '/';
     else if (r.page === 'writing') p = 'writing/';
+    else if (r.page === 'tag') p = 'tags/' + encodeURIComponent(r.id) + '/';
+    else if (r.page === 'tags') p = 'tags/';
     else if (r.page === 'lectures') p = 'lectures/' + (r.course ? r.course + '/' : '') + (r.video ? encodeURIComponent(r.video) + '/' : '');
     else if (r.page === 'sermons') p = 'sermons/' + (r.video ? encodeURIComponent(r.video) + '/' : '');
     else if (r.page === 'intro') p = 'intro/';
@@ -2354,6 +2496,7 @@ var lecCourses = [];
     if (document.getElementById('view-sermons').style.display !== 'none') return buildPath({ page: 'sermons' });
     if (document.getElementById('view-intro').style.display !== 'none') return buildPath({ page: 'intro' });
     if (document.getElementById('view-apply').style.display !== 'none') return buildPath({ page: 'apply' });
+    if (document.getElementById('view-tags').style.display !== 'none') return buildPath({ page: 'tags' });
     return buildPath({ page: 'home' });
   }
 
@@ -2399,6 +2542,9 @@ var lecCourses = [];
       showView('view-intro');
     } else if (r.page === 'apply') {
       showView('view-apply');
+    } else if (r.page === 'tags' || r.page === 'tag') {
+      showView('view-tags');
+      initTagsPage(r.id);
     } else {
       showView('view-home');
       initHome();
