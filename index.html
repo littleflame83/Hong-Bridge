@@ -168,6 +168,8 @@
   }
 
   .lecture-list{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+  .related-tag-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;}
+  @media (max-width:640px){ .related-tag-grid{grid-template-columns:1fr;gap:22px;} }
   .related-tag-label{display:inline-block;font-size:16px;font-weight:800;color:var(--brown);margin:0 0 10px;padding:0;}
   .related-tag-label:hover{text-decoration:underline;}
   .tag-pill-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
@@ -1540,20 +1542,28 @@ function toYoutubeEmbed(url) {
       }
       section.style.display = 'block';
 
+      var columns = document.createElement('div');
+      columns.className = 'related-tag-grid';
       groups.forEach(function (g) {
-        var groupEl = document.createElement('div');
-        groupEl.style.marginBottom = '28px';
+        var col = document.createElement('div');
         var label = document.createElement('a');
         label.className = 'related-tag-label';
         label.href = buildPath({ page: 'tag', id: g.tag });
         label.textContent = '#' + g.tag;
-        groupEl.appendChild(label);
-        var grid = document.createElement('div');
-        grid.className = 'home-card-grid';
-        groupEl.appendChild(grid);
-        renderHomeCardGrid(grid, g.items.slice(0, 4));
-        wrap.appendChild(groupEl);
+        col.appendChild(label);
+        var list = document.createElement('div');
+        list.className = 'lecture-list';
+        g.items.slice(0, 4).forEach(function (item) {
+          var row = document.createElement('a');
+          row.className = 'lecture-row';
+          row.href = item.path;
+          row.innerHTML = '<span class="lecture-title">' + escapeHtml(item.title) + '</span><span class="arrow">→</span>';
+          list.appendChild(row);
+        });
+        col.appendChild(list);
+        columns.appendChild(col);
       });
+      wrap.appendChild(columns);
       var moreEl = document.createElement('div');
       moreEl.className = 'section-more';
       moreEl.innerHTML = '<a href="/tags/">태그 전체보기</a>';
