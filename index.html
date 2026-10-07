@@ -233,18 +233,19 @@
   .intro p{margin:0;font-size:15.5px;color:var(--ink-soft);}
   .intro .more{font-size:14.5px;font-weight:700;color:var(--brown);}
 
-  .bridge-cta{background:#3A2A1C;padding:64px 6vw;text-align:center;}
+  .bridge-cta{background:#1E2530;padding:64px 6vw;text-align:center;}
   .bridge-cta-title{font-size:clamp(26px,4.5vw,38px);font-weight:800;color:var(--footer-text);margin:0 0 14px;letter-spacing:.3px;}
   .bridge-cta-eyebrow{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin:0 0 40px;}
-  .bridge-cta-eyebrow span{font-size:12.5px;font-weight:700;color:#FDBA74;letter-spacing:.02em;}
-  .bridge-cta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:34rem;margin:0 auto;}
-  .bridge-cta-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px;aspect-ratio:1;display:flex;flex-direction:column;}
-  .bridge-cta-box-title{margin:0 0 auto;font-size:15px;font-weight:800;color:var(--footer-text);text-align:left;line-height:1.4;}
-  .bridge-cta-btn{display:flex;align-items:center;justify-content:center;padding:16px;border-radius:12px;font-weight:800;font-size:14.5px;color:#fff;transition:opacity .15s ease;}
+  .bridge-cta-eyebrow span{font-size:12.5px;font-weight:700;color:#7DD3FC;letter-spacing:.02em;}
+  .bridge-cta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:44rem;margin:0 auto;text-align:left;}
+  .bridge-cta-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:24px 22px;display:flex;flex-direction:column;}
+  .bridge-cta-box-title{margin:0 0 8px;font-size:16px;font-weight:800;color:var(--footer-text);line-height:1.4;}
+  .bridge-cta-box-desc{margin:0 0 20px;font-size:13px;color:#A8B2C0;line-height:1.6;}
+  .bridge-cta-btn{display:flex;align-items:center;justify-content:center;margin-top:auto;padding:10px 20px;border-radius:999px;font-weight:700;font-size:13.5px;color:#fff;transition:opacity .15s ease;}
   .bridge-cta-btn:hover{opacity:.88;}
-  .bridge-cta-btn-blue{background:#2563EB;}
+  .bridge-cta-btn-sky{background:#0EA5E9;}
   .bridge-cta-btn-orange{background:var(--brown);color:#1A1714;}
-  @media (max-width:480px){ .bridge-cta-box{aspect-ratio:auto;min-height:150px;} }
+  @media (max-width:480px){ .bridge-cta-grid{grid-template-columns:1fr;} }
   footer{background:var(--footer-bg);color:var(--footer-text);padding:44px 6vw;}
   .foot-row{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;}
   .foot-brand{display:flex;align-items:center;gap:10px;}
@@ -606,7 +607,7 @@ html.paint-reset .share-sheet-backdrop{
 <!-- ===== 다리를 건너는 CTA ===== -->
 <section class="bridge-cta">
   <div class="home-content-wrap">
-    <h2 class="bridge-cta-title">다리 위에서 만나요</h2>
+    <h2 class="bridge-cta-title">여기서 연결됩니다</h2>
     <div class="bridge-cta-eyebrow">
       <span>#연락</span>
       <span>#함께 걸어요</span>
@@ -614,11 +615,13 @@ html.paint-reset .share-sheet-backdrop{
     </div>
     <div class="bridge-cta-grid">
       <div class="bridge-cta-box">
-        <p class="bridge-cta-box-title">🙋 저를 소개합니다</p>
-        <a class="bridge-cta-btn bridge-cta-btn-blue" href="/intro/">소개 보기 →</a>
+        <p class="bridge-cta-box-title">🌉 저를 소개합니다</p>
+        <p class="bridge-cta-box-desc">어떤 사람이 이 글과 강의를 쓰고 있는지 궁금하신가요?</p>
+        <a class="bridge-cta-btn bridge-cta-btn-sky" href="/intro/">Hong-Bridge 소개 →</a>
       </div>
       <div class="bridge-cta-box">
-        <p class="bridge-cta-box-title">📮 강의·설교 요청</p>
+        <p class="bridge-cta-box-title">🎙️ 강의·설교 요청</p>
+        <p class="bridge-cta-box-desc">말씀을 나눌 자리가 있다면 편하게 연락 주세요.</p>
         <a class="bridge-cta-btn bridge-cta-btn-orange" href="/apply/">신청하기 →</a>
       </div>
     </div>
