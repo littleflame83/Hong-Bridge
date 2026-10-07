@@ -137,6 +137,9 @@
 
   section{padding:56px 6vw;}
   .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:26px;}
+  .sort-tabs{display:flex;gap:6px;}
+  .sort-tab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink-faint);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .sort-tab.active{background:var(--brown);border-color:var(--brown);color:#fff;}
   .section-head h2{margin:0;font-size:24px;font-weight:700;}
   .section-head a.more{font-size:14px;font-weight:700;color:var(--brown);white-space:nowrap;}
   .section-more{display:flex;justify-content:center;margin-top:28px;}
@@ -228,6 +231,17 @@
   .intro p{margin:0;font-size:15.5px;color:var(--ink-soft);}
   .intro .more{font-size:14.5px;font-weight:700;color:var(--brown);}
 
+  .bridge-cta{background:var(--footer-bg);padding:64px 6vw;text-align:center;}
+  .bridge-cta-eyebrow{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin:0 0 14px;}
+  .bridge-cta-eyebrow span{font-size:12.5px;font-weight:700;color:var(--brown);letter-spacing:.02em;}
+  .bridge-cta-title{font-size:clamp(28px,5vw,42px);font-weight:800;color:var(--footer-text);margin:0 0 40px;letter-spacing:.5px;}
+  .bridge-cta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;text-align:left;max-width:72rem;margin:0 auto;}
+  .bridge-cta-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:28px 26px;}
+  .bridge-cta-box-title{margin:0 0 8px;font-size:18px;font-weight:800;color:var(--footer-text);}
+  .bridge-cta-box-desc{margin:0 0 18px;font-size:13.5px;color:#C9C1B8;line-height:1.6;}
+  .bridge-cta-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:999px;background:var(--brown);color:#1A1714;font-weight:700;font-size:13.5px;}
+  .bridge-cta-btn:hover{opacity:.9;}
+  @media (max-width:640px){ .bridge-cta-grid{grid-template-columns:1fr;} }
   footer{background:var(--footer-bg);color:var(--footer-text);padding:44px 6vw;}
   .foot-row{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;}
   .foot-brand{display:flex;align-items:center;gap:10px;}
@@ -531,6 +545,10 @@ html.paint-reset .share-sheet-backdrop{
   <div class="home-content-wrap">
     <div class="section-head">
       <h2>글</h2>
+      <div class="sort-tabs" id="writing-sort-tabs">
+        <button class="sort-tab active" data-sort="latest" type="button">최신순</button>
+        <button class="sort-tab" data-sort="popular" type="button">인기순</button>
+      </div>
     </div>
     <div class="home-card-grid" id="writing-cards"></div>
     <div class="section-more"><a href="/writing/">글 전체보기</a></div>
@@ -582,6 +600,29 @@ html.paint-reset .share-sheet-backdrop{
   </div>
 </section>
 
+<!-- ===== 다리를 건너는 CTA ===== -->
+<section class="bridge-cta">
+  <div class="home-content-wrap">
+    <div class="bridge-cta-eyebrow">
+      <span>#연락</span>
+      <span>#함께 걸어요</span>
+      <span>#다리를 건너보아요</span>
+    </div>
+    <h2 class="bridge-cta-title">HONG-BRIDGE</h2>
+    <div class="bridge-cta-grid">
+      <div class="bridge-cta-box">
+        <p class="bridge-cta-box-title">저를 소개합니다</p>
+        <p class="bridge-cta-box-desc">어떤 사람이 이 글과 강의를 쓰고 있는지 궁금하신가요?</p>
+        <a class="bridge-cta-btn" href="/intro/">소개 보기 →</a>
+      </div>
+      <div class="bridge-cta-box">
+        <p class="bridge-cta-box-title">강의·설교를 요청합니다</p>
+        <p class="bridge-cta-box-desc">말씀을 나눌 자리가 있다면 편하게 연락 주세요.</p>
+        <a class="bridge-cta-btn" href="/apply/">신청하기 →</a>
+      </div>
+    </div>
+  </div>
+</section>
 
 </div>
 
@@ -1372,30 +1413,51 @@ function toYoutubeEmbed(url) {
   }
 
   
+  function renderWritingCards(items, viewCounts, sortMode) {
+    var sorted = items.slice().sort(function (a, b) {
+      if (sortMode === 'popular') {
+        var diff = (viewCounts[b.id] || 0) - (viewCounts[a.id] || 0);
+        if (diff !== 0) return diff;
+      }
+      return (b.date || '').localeCompare(a.date || '');
+    });
+    var top4 = sorted.slice(0, 4);
+    var wrap = document.getElementById('writing-cards');
+    wrap.innerHTML = '';
+    top4.forEach(function (item) {
+      var a = document.createElement('a');
+      a.className = 'home-card';
+      a.href = buildPath({ page: 'article', id: item.id });
+      var cat = [item.mainCategory, item.subCategory].filter(Boolean).join(' · ');
+      a.innerHTML =
+        '<div class="home-thumb">' + (item.thumbnail ? '<img src="' + resolveAsset(item.thumbnail) + '" loading="lazy" alt="' + escapeHtml(item.title) + '">' : '') + '</div>' +
+        '<div class="home-body">' +
+        '<span class="home-cat">' + escapeHtml(cat) + '</span>' +
+        '<h3 class="home-title">' + escapeHtml(item.title) + '</h3>' +
+        '<p class="home-summary">' + escapeHtml(item.summary || '') + '</p>' +
+        '</div>';
+      wrap.appendChild(a);
+    });
+    translateIfNeeded(wrap);
+  }
+
   function initHome() {
-  fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).then(function (items) {
-      var sorted = items.slice().sort(function (a, b) {
-        return (b.date || '').localeCompare(a.date || '');
+  Promise.all([
+    fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }),
+    fetch('/views').then(function (r) { return r.json(); }).catch(function () { return {}; })
+  ]).then(function (results) {
+      var items = results[0], viewCounts = results[1] || {};
+      renderWritingCards(items, viewCounts, 'latest');
+
+      var sortTabs = document.getElementById('writing-sort-tabs');
+      sortTabs.querySelectorAll('.sort-tab').forEach(function (btn) {
+        btn.onclick = function () {
+          sortTabs.querySelectorAll('.sort-tab').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          renderWritingCards(items, viewCounts, btn.getAttribute('data-sort'));
+        };
       });
-      var top4 = sorted.slice(0, 4);
-      var wrap = document.getElementById('writing-cards');
-      wrap.innerHTML = '';
-      top4.forEach(function (item) {
-        var a = document.createElement('a');
-        a.className = 'home-card';
-        a.href = buildPath({ page: 'article', id: item.id });
-        var cat = [item.mainCategory, item.subCategory].filter(Boolean).join(' · ');
-        a.innerHTML =
-          '<div class="home-thumb">' + (item.thumbnail ? '<img src="' + resolveAsset(item.thumbnail) + '" loading="lazy" alt="' + escapeHtml(item.title) + '">' : '') + '</div>' +
-          '<div class="home-body">' +
-          '<span class="home-cat">' + escapeHtml(cat) + '</span>' +
-          '<h3 class="home-title">' + escapeHtml(item.title) + '</h3>' +
-          '<p class="home-summary">' + escapeHtml(item.summary || '') + '</p>' +
-          '</div>';
-        wrap.appendChild(a);
-      });
-      translateIfNeeded(wrap);
-  
+
       // 설교 카드는 같은 태그를 가진 글과 연결해야 하므로 writing 목록을 함께 사용
       fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }).then(function (sermonItems) {
         var withVideo = sermonItems.filter(function (s) { return s.video; });
@@ -1640,6 +1702,7 @@ function toYoutubeEmbed(url) {
       }
   
       document.title = entry.title + ' | HONG-BRIDGE';
+      fetch('/views/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: entry.id }) }).catch(function () {});
       trackPageview(window.location.pathname, document.title);
       currentArticleImage = entry.thumbnail ? resolveAsset(entry.thumbnail) : (entry.video ? 'https://img.youtube.com/vi/' + getYoutubeId(entry.video) + '/hqdefault.jpg' : '');
       var metaDesc = document.querySelector('meta[name="description"]');
