@@ -136,6 +136,8 @@
   .btn-outline{background:transparent;color:var(--brown);border:2px solid var(--brown);}
 
   section{padding:56px 6vw;}
+  #writing, #sermons{background:var(--cream);padding:64px 0;}
+  #lectures, #related-tags{background:var(--cream-deep);padding:64px 0;}
   .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:26px;}
   .sort-tabs{display:flex;gap:6px;}
   .sort-tab{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink-faint);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
@@ -231,17 +233,18 @@
   .intro p{margin:0;font-size:15.5px;color:var(--ink-soft);}
   .intro .more{font-size:14.5px;font-weight:700;color:var(--brown);}
 
-  .bridge-cta{background:var(--footer-bg);padding:64px 6vw;text-align:center;}
-  .bridge-cta-eyebrow{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin:0 0 14px;}
-  .bridge-cta-eyebrow span{font-size:12.5px;font-weight:700;color:var(--brown);letter-spacing:.02em;}
-  .bridge-cta-title{font-size:clamp(28px,5vw,42px);font-weight:800;color:var(--footer-text);margin:0 0 40px;letter-spacing:.5px;}
-  .bridge-cta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;text-align:left;max-width:72rem;margin:0 auto;}
-  .bridge-cta-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:28px 26px;}
-  .bridge-cta-box-title{margin:0 0 8px;font-size:18px;font-weight:800;color:var(--footer-text);}
-  .bridge-cta-box-desc{margin:0 0 18px;font-size:13.5px;color:#C9C1B8;line-height:1.6;}
-  .bridge-cta-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:999px;background:var(--brown);color:#1A1714;font-weight:700;font-size:13.5px;}
-  .bridge-cta-btn:hover{opacity:.9;}
-  @media (max-width:640px){ .bridge-cta-grid{grid-template-columns:1fr;} }
+  .bridge-cta{background:#3A2A1C;padding:64px 6vw;text-align:center;}
+  .bridge-cta-title{font-size:clamp(26px,4.5vw,38px);font-weight:800;color:var(--footer-text);margin:0 0 14px;letter-spacing:.3px;}
+  .bridge-cta-eyebrow{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin:0 0 40px;}
+  .bridge-cta-eyebrow span{font-size:12.5px;font-weight:700;color:#FDBA74;letter-spacing:.02em;}
+  .bridge-cta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:34rem;margin:0 auto;}
+  .bridge-cta-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:22px;aspect-ratio:1;display:flex;flex-direction:column;}
+  .bridge-cta-box-title{margin:0 0 auto;font-size:15px;font-weight:800;color:var(--footer-text);text-align:left;line-height:1.4;}
+  .bridge-cta-btn{display:flex;align-items:center;justify-content:center;padding:16px;border-radius:12px;font-weight:800;font-size:14.5px;color:#fff;transition:opacity .15s ease;}
+  .bridge-cta-btn:hover{opacity:.88;}
+  .bridge-cta-btn-blue{background:#2563EB;}
+  .bridge-cta-btn-orange{background:var(--brown);color:#1A1714;}
+  @media (max-width:480px){ .bridge-cta-box{aspect-ratio:auto;min-height:150px;} }
   footer{background:var(--footer-bg);color:var(--footer-text);padding:44px 6vw;}
   .foot-row{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;}
   .foot-brand{display:flex;align-items:center;gap:10px;}
@@ -603,22 +606,20 @@ html.paint-reset .share-sheet-backdrop{
 <!-- ===== 다리를 건너는 CTA ===== -->
 <section class="bridge-cta">
   <div class="home-content-wrap">
+    <h2 class="bridge-cta-title">다리 위에서 만나요</h2>
     <div class="bridge-cta-eyebrow">
       <span>#연락</span>
       <span>#함께 걸어요</span>
       <span>#다리를 건너보아요</span>
     </div>
-    <h2 class="bridge-cta-title">HONG-BRIDGE</h2>
     <div class="bridge-cta-grid">
       <div class="bridge-cta-box">
-        <p class="bridge-cta-box-title">저를 소개합니다</p>
-        <p class="bridge-cta-box-desc">어떤 사람이 이 글과 강의를 쓰고 있는지 궁금하신가요?</p>
-        <a class="bridge-cta-btn" href="/intro/">소개 보기 →</a>
+        <p class="bridge-cta-box-title">🙋 저를 소개합니다</p>
+        <a class="bridge-cta-btn bridge-cta-btn-blue" href="/intro/">소개 보기 →</a>
       </div>
       <div class="bridge-cta-box">
-        <p class="bridge-cta-box-title">강의·설교를 요청합니다</p>
-        <p class="bridge-cta-box-desc">말씀을 나눌 자리가 있다면 편하게 연락 주세요.</p>
-        <a class="bridge-cta-btn" href="/apply/">신청하기 →</a>
+        <p class="bridge-cta-box-title">📮 강의·설교 요청</p>
+        <a class="bridge-cta-btn bridge-cta-btn-orange" href="/apply/">신청하기 →</a>
       </div>
     </div>
   </div>
@@ -963,6 +964,7 @@ html.paint-reset .share-sheet-backdrop{
 </div>
 
 <footer>
+  <div class="home-content-wrap">
   <div class="foot-row">
     <div>
       <div class="foot-brand">
@@ -992,6 +994,7 @@ html.paint-reset .share-sheet-backdrop{
     </div>
   </div>
   <div class="copyright">© 2026 HONG-BRIDGE. All rights reserved.</div>
+  </div>
 </footer>
 
 <div id="shareToast"></div>
