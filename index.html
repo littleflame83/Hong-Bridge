@@ -1450,7 +1450,7 @@ function toYoutubeEmbed(url) {
 
   function initHome() {
   Promise.all([
-    fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }),
+    fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }),
     fetch('/views').then(function (r) { return r.json(); }).catch(function () { return {}; })
   ]).then(function (results) {
       var items = results[0], viewCounts = results[1] || {};
@@ -1466,7 +1466,7 @@ function toYoutubeEmbed(url) {
       });
 
       // 설교 카드는 같은 태그를 가진 글과 연결해야 하므로 writing 목록을 함께 사용
-      fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }).then(function (sermonItems) {
+      fetch(BASE_PATH + 'data/sermons.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (sermonItems) {
         var withVideo = sermonItems.filter(function (s) { return s.video; });
         var sortedSermons = withVideo.slice().sort(function (a, b) {
           return (b.date || '').localeCompare(a.date || '');
@@ -1507,9 +1507,9 @@ function toYoutubeEmbed(url) {
 
   function buildTagIndex() {
     return Promise.all([
-      fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
-      fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
-      fetch(BASE_PATH + 'data/lectures.json').then(function (r) { return r.json(); }).catch(function () { return []; })
+      fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+      fetch(BASE_PATH + 'data/sermons.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+      fetch(BASE_PATH + 'data/lectures.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; })
     ]).then(function (results) {
       var writing = results[0], sermons = results[1], lecturesRaw = results[2];
       var all = [];
@@ -1676,9 +1676,9 @@ function toYoutubeEmbed(url) {
 
   function initArticle(articleId) {
   Promise.all([
-      fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
-      fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
-      fetch(BASE_PATH + 'data/lectures.json').then(function (r) { return r.json(); }).catch(function () { return []; })
+      fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+      fetch(BASE_PATH + 'data/sermons.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+      fetch(BASE_PATH + 'data/lectures.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; })
     ]).then(function (results) {
       var writing = results[0].map(function (e) { return Object.assign({}, e, { sourceType: 'writing', pillLabel: '글' }); });
       var sermons = results[1].map(function (e) { return Object.assign({}, e, { sourceType: 'sermon', pillLabel: '영상' }); });
@@ -1874,8 +1874,8 @@ var lecCourses = [];
 
   function initLectures(courseParam, autoOpenVideoId) {
   Promise.all([
-    fetch(BASE_PATH + 'data/lectures.json').then(function (r) { return r.json(); }),
-    fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).catch(function () { return []; })
+    fetch(BASE_PATH + 'data/lectures.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }),
+    fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; })
   ]).then(function (results) {
     var data = results[0];
     lecWritingItems = results[1];
@@ -2232,8 +2232,8 @@ var lecCourses = [];
 
   function initSermonsPage(autoOpenId) {
     Promise.all([
-      fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }),
-      fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).catch(function () { return []; })
+      fetch(BASE_PATH + 'data/sermons.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }),
+      fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; })
     ]).then(function (results) {
       var items = results[0];
       var writingItems = results[1];
@@ -2279,7 +2279,7 @@ var lecCourses = [];
   }
 
   function initWritingListPage() {
-    fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).then(function (items) {
+    fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (items) {
       var sorted = items.slice().sort(function (a, b) {
         return (b.date || '').localeCompare(a.date || '');
       });
@@ -2322,9 +2322,9 @@ var lecCourses = [];
   function buildSearchIndex() {
     if (searchIndexPromise) return searchIndexPromise;
     searchIndexPromise = Promise.all([
-      fetch(BASE_PATH + 'data/writing.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
-      fetch(BASE_PATH + 'data/sermons.json').then(function (r) { return r.json(); }).catch(function () { return []; }),
-      fetch(BASE_PATH + 'data/lectures.json').then(function (r) { return r.json(); }).catch(function () { return []; })
+      fetch(BASE_PATH + 'data/writing.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+      fetch(BASE_PATH + 'data/sermons.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; }),
+      fetch(BASE_PATH + 'data/lectures.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return []; })
     ]).then(function (results) {
       var writing = results[0], sermons = results[1], lecturesRaw = results[2];
       var items = [];
